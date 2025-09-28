@@ -126,35 +126,6 @@ int main(int argc, char** argv) {
 """
         )
         print(f"{Fore.GREEN} Written /modules/main/main.{c_cpp}. {Style.RESET_ALL}")
-
-    try:
-        f = open(directory + f"/README.txt", 'w')
-    except OSError:
-        print(f"{Fore.RED} Unable to create README.txt.\n [compilation terminated] {Style.RESET_ALL}")
-        sys.exit()
-    with f:
-        f.write(
-"""in last/ there will be files for the buildsystem to know what to build and what to skip,
-do not modify anything there as it could result in faulty builds.
-
-in dist/ depending on the config (by default) will be the build output.
-in build/ there will be object files for linking.
-
-!!! Important !!!
-in includes.c put c files of libraries.
-in includes.h put header files of libraries. (includes.h will be automatically added to include path)
-in modules/ there will be directories of modules each modules will be built sepperatly and linked together later.
-
-in __sbmconfig__ you can add flags to your modules like this
-[m_(module name)]
-flags=(flags)
-
-example for module main
-[m_main]
-flags=-O2 -pipe
-"""
-        )
-        print(f"{Fore.GREEN} Written README.txt. {Style.RESET_ALL}")
     
 if option == "clean" or option == "rebuild":
     for i in ["dist", "build", "last"]:
