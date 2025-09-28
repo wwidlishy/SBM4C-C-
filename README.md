@@ -60,7 +60,7 @@ NOTE:
    template:  
    ```ini
    [relations]
-   m_<module_name>/<file_in_that_module> = m_<module_name>/<file_in_that_module> m_<module_name>/<file_in_that_module> ...
+   m_<module_name>/<file_which_change_triggers_recompilation> = m_<module_name>/<file_to_recompile> m_<module_name>/<another_file_to_recompile> ...
    ```
    example:
    ```ini
