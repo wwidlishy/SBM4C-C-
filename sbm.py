@@ -168,6 +168,8 @@ if option == "clean" or option == "rebuild":
         print(f"{Fore.GREEN} Cleaned: '{i}'. {Style.RESET_ALL}")
 
 if option == "build" or option == "rebuild":
+    build_files = []
+
     if os.path.exists(directory):
         print(f"{Fore.GREEN} Project directory present. {Style.RESET_ALL}")
     else:
@@ -245,6 +247,8 @@ if option == "build" or option == "rebuild":
 
             if exit_code == 0:
                 print(f"{Fore.GREEN} SUCCESS. {Style.RESET_ALL}")
+                build_files.append(f"{module}/{cf.stem}{cf.suffix}")
+
             else:
                 print(f"{Fore.RED} FAILURE. \n [compilation terminated]{Style.RESET_ALL}")
                 sys.exit(0)
@@ -257,15 +261,15 @@ if option == "build" or option == "rebuild":
 
 
 
-        directory2 = Path(directory + "/build")
-        o_files = list(directory2.rglob("*.o"))
-        o_files = [str(i) for i in o_files]
-        print(f"{Fore.GREEN} Linking modules {Style.RESET_ALL}")
-        command = f"  {compiler} -I{directory}/include -std={standard} -o {directory}/{output} {' '.join(o_files)}"
-        print(command)
-        result = os.system(command)
+    directory2 = Path(directory + "/build")
+    o_files = list(directory2.rglob("*.o"))
+    o_files = [str(i) for i in o_files]
+    print(f"{Fore.GREEN} Linking modules {Style.RESET_ALL}")
+    command = f"  {compiler} -I{directory}/include -std={standard} -o {directory}/{output} {' '.join(o_files)}"
+    print(command)
+    result = os.system(command)
 
-        if result == 0:
-            print(f"{Fore.GREEN} Program build into {output} {Style.RESET_ALL}")
-        else:
-            print(f"{Fore.RED} [compilation failed] {Style.RESET_ALL}")
+    if result == 0:
+        print(f"{Fore.GREEN} Program build into {output} {Style.RESET_ALL}")
+    else:
+        print(f"{Fore.RED} [compilation failed] {Style.RESET_ALL}")
