@@ -13,6 +13,7 @@ Simple Build Manager for C and C++
   - building to object files
   - building to libraries (linux .lib and windows .dll)
   - building to gnu assembly
+  - relations
 
 ## usage
 1. creating a new project  
