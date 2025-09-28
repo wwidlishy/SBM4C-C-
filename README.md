@@ -1,4 +1,4 @@
-# SBM4C-C-
+# SBM4C/C++
 Simple Build Manager for C and C++
 
 ## requirements
@@ -53,4 +53,17 @@ NOTE:
    ```ini
    [m_main]
    flags = -O2
+   ```
+2. relations (not implemented yet)
+   What are relations?  
+   Relations force the buildsystem to recompile a file when a file its related to is changed or recompiled.  
+   template:  
+   ```ini
+   [relations]
+   m_<module_name>/<file_in_that_module> = m_<module_name>/<file_in_that_module> m_<module_name>/<file_in_that_module> ...
+   ```
+   example:
+   ```ini
+   [relations]
+   m_main/mystruct_s.h = m_main/mystruct_user1.c m_main/mystruct_user2.c
    ```
