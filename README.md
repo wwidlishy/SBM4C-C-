@@ -11,7 +11,7 @@ Simple Build Manager for C and C++
   - new, clean, build, rebuild options
   - building to object files
   - relations
-  
+  - adding modules into a modules include path
 ## usage
 1. creating a new project  
    type `sbm new <project_path>` and finish the setup  
@@ -43,16 +43,18 @@ NOTE:
 - `output` is the path of the result  
   based on the extenstion the file will be built as either executable (linux: `.out`, windows: `.exe`), asm (`.s`, `.asm`), object (linux: `.o`, windows: `.obj`) or library (linux: `.lib`, windows: `.dll`)
 
-1. Adding flags for a specific module
+1. Adding flags and includes for a specific module
    to your config add:
    ```ini
    [m_<module_name>]
    flags = <flags>
+   include = m_<module_name> m_<module_name> ...
    ```
    example for module `main`:
    ```ini
    [m_main]
    flags = -O2
+   include = m_mystruct
    ```
 3. relations
    What are relations?  
