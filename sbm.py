@@ -48,8 +48,8 @@ if option == "new":
 
     extenstion = ""
     extt = ""
-    while extenstion.lower() not in ["exe", "obj", "lib"]:
-        extenstion = input(" What is your desired output? [exe/obj/lib] ")
+    while extenstion.lower() not in ["exe", "obj"]:
+        extenstion = input(" What is your desired output? [exe/obj] ")
         extt = str(extenstion)
 
     standards = ["c89", "c90", "c95", "c99", "c11", "c17", "c23", "gnu89", "gnu90", "gnu95", "gnu99", "gnu11", "gnu17", "gnu23"]
@@ -334,9 +334,17 @@ if option == "build" or option == "rebuild":
 
     print(f"{Fore.GREEN} Linking modules {Style.RESET_ALL}")
 
-    command = f"  {compiler} -I{directory}/include -std={standard} -o {directory}/{output} {' '.join(o_files)}"
-    print(command)
-    result = os.system(command)
+    result = 0
+    if type_ == "exe":
+        command = f"  {compiler} -I{directory}/include -std={standard} -o {directory}/{output} {' '.join(o_files)}"
+        print(command)
+        result = os.system(command)
+    elif type_ == "obj":
+        command = f"  ar rcs {directory}/{output} {' '.join(o_files)}"
+        print(command)
+        result = os.system(command)
+    else:
+        print(f" {Fore.RED}Invalid type{Style.RESET_ALL}")
 
     print(f"~~== {Fore.CYAN}Finished{Style.RESET_ALL} ==~~")
     if result == 0:
