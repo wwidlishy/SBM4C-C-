@@ -54,7 +54,7 @@ NOTE:
    [m_main]
    flags = -O2
    ```
-2. relations (not implemented yet)
+2. relations
    What are relations?  
    Relations force the buildsystem to recompile a file when a file its related to is changed or recompiled.  
    template:  
