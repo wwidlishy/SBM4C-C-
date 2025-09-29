@@ -11,8 +11,6 @@ Simple Build Manager for C and C++
   - new, clean, build, rebuild options
   - building to object files
   - relations
-- not implemented yet:
-  - additional include paths per module
   
 ## usage
 1. creating a new project  
@@ -55,19 +53,6 @@ NOTE:
    ```ini
    [m_main]
    flags = -O2
-   ```
-2. Adding custom include paths to a specific module (not implemented yet)
-   to your config add:
-   ```ini
-   [m_<module_name>]
-   ... previous module settings
-   include = m_<module_name> m_<module_name> ...
-   ```
-   example for module `main`:
-   ```ini
-   [m_main]
-   ... previous module settings
-   include = m_mylittlemath
    ```
 3. relations
    What are relations?  
