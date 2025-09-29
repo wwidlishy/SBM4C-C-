@@ -9,10 +9,9 @@ Simple Build Manager for C and C++
 - implemented:
   - executable building
   - new, clean, build, rebuild options
+  - building to object files
   - relations
 - not implemented yet:
-  - building to object files
-  - building to libraries (linux .lib and windows .dll)
   - additional include paths per module
   
 ## usage
