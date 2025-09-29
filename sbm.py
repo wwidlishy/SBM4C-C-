@@ -152,7 +152,7 @@ def build_c(module, cf, force=False):
                 f2 = open(directory + f"/last/modules/{module}/{cf.stem + cf.suffix}").read()
                 if (f1 == f2 and os.path.exists(f"{directory}/build/modules/{module}/{cf.stem}.o") and not force):
                     print(f"{Fore.YELLOW} SKIPPED (No source modification). {Style.RESET_ALL}")
-                    return
+                    return 5
 
             except:
                 pass
@@ -281,8 +281,8 @@ if option == "build" or option == "rebuild":
         c_files = get_files(Path(directory + f"/modules/{module}"), [".c"] if compiler == "gcc" else [".c", ".cpp", ".c++"])
 
         for cf in c_files:
-            build_c(module, cf)
-            build_files.append(str(cf).replace("\\", "/"))
+            if build_c(module, cf) != 5:
+                build_files.append(str(cf).replace("\\", "/"))
 
 
     print("~~== Enforcing relations ==~~")
