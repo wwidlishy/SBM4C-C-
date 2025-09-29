@@ -11,6 +11,10 @@ colorama.init()
 option = ""
 directory = ""
 
+
+def get_files(folder_path: Path, extenstions):
+    return [f for f in folder_path.rglob("*") if f.is_file() and f.suffix in extenstions]
+
 if len(sys.argv) == 3:
     option = sys.argv[1]
     directory = sys.argv[2]
@@ -43,8 +47,10 @@ if option == "new":
     c_cpp = c_cpp.replace("c++", "cpp")
 
     extenstion = ""
-    while extenstion.lower() not in ["exe", "asm", "obj", "lib"]:
-        extenstion = input(" What is your desired output? [exe/asm/obj/lib] ")
+    extt = ""
+    while extenstion.lower() not in ["exe", "obj", "lib"]:
+        extenstion = input(" What is your desired output? [exe/obj/lib] ")
+        extt = str(extenstion)
 
     standards = ["c89", "c90", "c95", "c99", "c11", "c17", "c23", "gnu89", "gnu90", "gnu95", "gnu99", "gnu11", "gnu17", "gnu23"]
     if c_cpp == "cpp":
@@ -73,6 +79,7 @@ if option == "new":
             "compiler": "gcc" if c_cpp == "c" else "g++",
             "standard": standard,
             "output": f"dist/output.{extenstion}",
+            "type": extt,
             "flags": ""
         }
 
@@ -128,6 +135,7 @@ int main(int argc, char** argv) {
         print(f"{Fore.GREEN} Written /modules/main/main.{c_cpp}. {Style.RESET_ALL}")
     
 if option == "clean" or option == "rebuild":
+    print("~~== Cleaning ==~~")
     for i in ["dist", "build", "last"]:
         folder = Path(directory + f"/{i}")
 
@@ -138,71 +146,13 @@ if option == "clean" or option == "rebuild":
                 shutil.rmtree(item)
         print(f"{Fore.GREEN} Cleaned: '{i}'. {Style.RESET_ALL}")
 
-if option == "build" or option == "rebuild":
-    build_files = []
-
-    if os.path.exists(directory):
-        print(f"{Fore.GREEN} Project directory present. {Style.RESET_ALL}")
-    else:
-        print(f"{Fore.RED} Project directory doesn't exist. {Style.RESET_ALL}")
-        sys.exit(0)
-
-    config = configparser.ConfigParser()
-    if os.path.exists(directory + "/__sbmconfig__"):
-        print(f"{Fore.GREEN} Project config present. {Style.RESET_ALL}")
-        config.read(directory + "/__sbmconfig__")
-    else:
-        print(f"{Fore.RED} Project config doesn't exist. {Style.RESET_ALL}")
-        sys.exit(0)
-
-    
-    compiler = ""
-    standard = ""
-    output = ""
-    flags = ""
-
-    try:
-        compiler = config.get("compiler", "compiler")
-        standard = config.get("compiler", "standard")
-        output = config.get("compiler", "output")
-        flags = config.get("compiler", "flags")
-    except:
-        print(f"{Fore.RED} Couldnt find required fields.\n Make sure [compiler] contains: compiler, standard, output, flags. {Style.RESET_ALL}")
-        sys.exit(0)
-
-    for i in ["build", "dist", "include", "last", "modules"]:
-        if os.path.exists(directory + "/" + str(i)):
-            print(f"{Fore.GREEN} {i} present. {Style.RESET_ALL}")
-        else:
-            print(f"{Fore.RED} {i} doesn't exist. {Style.RESET_ALL}")
-            sys.exit(0)
-
-    folder_path = directory + "/modules"
-    num_folders = sum(
-        1 for entry in os.listdir(folder_path)
-        if os.path.isdir(os.path.join(folder_path, entry))
-    )
-
-    print(f"{Fore.GREEN} Found {num_folders} modules. {Style.RESET_ALL}")
-
-    for module in [entry for entry in os.listdir(folder_path)
-        if os.path.isdir(os.path.join(folder_path, entry))]:
-        
-        print(f"{Fore.GREEN} Compiling module '{module}' {Style.RESET_ALL}")
-        if not os.path.exists(directory + f"/build/modules/{module}"):
-            os.makedirs(directory + f"/build/modules/{module}")
-
-
-        folder_path = Path(directory + f"/modules/{module}")
-        c_files = [f for f in folder_path.iterdir() if f.is_file() and f.suffix in ([".c"] if compiler == "gcc" else [".cpp", ".c++"])[0]]
-
-        for cf in c_files:
+def build_c(module, cf, force=False):
             try:
                 f1 = open(cf.resolve()).read()
                 f2 = open(directory + f"/last/modules/{module}/{cf.stem + cf.suffix}").read()
-                if (f1 == f2):
+                if (f1 == f2 and os.path.exists(f"{directory}/build/modules/{module}/{cf.stem}.o") and not force):
                     print(f"{Fore.YELLOW} SKIPPED (No source modification). {Style.RESET_ALL}")
-                    continue
+                    return
 
             except:
                 pass
@@ -230,16 +180,165 @@ if option == "build" or option == "rebuild":
             Path(destination_folder).mkdir(parents=True, exist_ok=True)
             shutil.copy(source_file, destination_folder)
 
+def validate_mpath(directory, mpath, all_ext):
+    mpath = mpath.split("/")
+    if len(mpath) <= 1:
+        return None
+    
+    folder_path = directory + "/modules"
+    for module in [entry for entry in os.listdir(folder_path) if os.path.isdir(os.path.join(folder_path, entry))]:
+        module_path = directory + f"/modules/{module}"
+        if f"m_{module}" == mpath[0]:
+            if os.path.exists(module_path + "/" + "/".join(mpath[1:])):
+                return module_path + "/" + "/".join(mpath[1:])
+            else:
+                return None
+            
+    return None
+
+def is_mpath_same(directory, mpath, all_ext):
+    mpath = mpath.split("/")
+    if len(mpath) <= 1:
+        return None
+    
+    folder_path = directory + "/modules"
+    f1 = ""
+    f2 = "-"
+
+    for module in [entry for entry in os.listdir(folder_path) if os.path.isdir(os.path.join(folder_path, entry))]:
+        module_path = directory + f"/modules/{module}"
+        if f"m_{module}" == mpath[0]:
+            if os.path.exists(module_path + "/" + "/".join(mpath[1:])):
+                f1 = open(module_path + "/" + "/".join(mpath[1:])).read()
+
+    folder_path = directory + "/last/modules"
+    for module in [entry for entry in os.listdir(folder_path) if os.path.isdir(os.path.join(folder_path, entry))]:
+        module_path = directory + f"/last/modules/{module}"
+        if f"m_{module}" == mpath[0]:
+            if os.path.exists(module_path + "/" + "/".join(mpath[1:])):
+                f2 = open(module_path + "/" + "/".join(mpath[1:])).read()
+
+    return f1 == f2
+
+if option == "build" or option == "rebuild":
+    build_files = []
+
+    print("~~== Initial checks ==~~")
+    if os.path.exists(directory):
+        print(f"{Fore.GREEN} Project directory present. {Style.RESET_ALL}")
+    else:
+        print(f"{Fore.RED} Project directory doesn't exist. {Style.RESET_ALL}")
+        sys.exit(0)
+
+    config = configparser.ConfigParser()
+    if os.path.exists(directory + "/__sbmconfig__"):
+        print(f"{Fore.GREEN} Project config present. {Style.RESET_ALL}")
+        config.read(directory + "/__sbmconfig__")
+    else:
+        print(f"{Fore.RED} Project config doesn't exist. {Style.RESET_ALL}")
+        sys.exit(0)
+
+    
+    compiler = ""
+    standard = ""
+    output = ""
+    type_ = ""
+    flags = ""
+
+    try:
+        compiler = config.get("compiler", "compiler")
+        standard = config.get("compiler", "standard")
+        output = config.get("compiler", "output")
+        type_ = config.get("compiler", "type")
+        flags = config.get("compiler", "flags")
+    except:
+        print(f"{Fore.RED} Couldnt find required fields.\n Make sure [compiler] contains: compiler, standard, output, flags. {Style.RESET_ALL}")
+        sys.exit(0)
+
+    for i in ["build", "dist", "include", "last", "modules"]:
+        if os.path.exists(directory + "/" + str(i)):
+            print(f"{Fore.GREEN} {i} present. {Style.RESET_ALL}")
+        else:
+            print(f"{Fore.RED} {i} doesn't exist. {Style.RESET_ALL}")
+            sys.exit(0)
+
+    folder_path = directory + "/modules"
+    num_folders = sum(
+        1 for entry in os.listdir(folder_path)
+        if os.path.isdir(os.path.join(folder_path, entry))
+    )
+
+    print(f"{Fore.GREEN} Found {num_folders} modules. {Style.RESET_ALL}")
+    print("~~== Compiling modules ==~~")
+
+    for module in [entry for entry in os.listdir(folder_path)
+        if os.path.isdir(os.path.join(folder_path, entry))]:
+        
+        print(f"{Fore.GREEN} Compiling module '{module}' {Style.RESET_ALL}")
+        if not os.path.exists(directory + f"/build/modules/{module}"):
+            os.makedirs(directory + f"/build/modules/{module}")
+
+        c_files = get_files(Path(directory + f"/modules/{module}"), [".c"] if compiler == "gcc" else [".c", ".cpp", ".c++"])
+
+        for cf in c_files:
+            build_c(module, cf)
+            build_files.append(str(cf).replace("\\", "/"))
 
 
-    directory2 = Path(directory + "/build")
-    o_files = list(directory2.rglob("*.o"))
+    print("~~== Enforcing relations ==~~")
+    relations = None
+    try:
+        relations = config["relations"].items()
+    except:
+        print(f"{Fore.YELLOW} No relations found. ignoring... {Style.RESET_ALL}")
+    if relations:
+        print(f"{Fore.GREEN} Found {len(relations)} {'relation' if len(relations) == 1 else 'relations'}. {Style.RESET_ALL}")
+        for key, value in relations:
+            _recompile = value.split(" ")
+            actual_paths = []
+            print(f"  {Fore.MAGENTA}if_changed{Style.RESET_ALL} {key} {Fore.MAGENTA}recompile{Style.RESET_ALL} {_recompile}")
+
+            for index, mpath in enumerate([key] + _recompile):
+                exts = [".c"] if compiler == "gcc" else [".c", ".cpp", ".c++"]
+                if index == 0:
+                    exts = [".c", ".h"] if compiler == "gcc" else [".c", ".cpp", ".c++", ".h", ".hpp", ".h++"]
+
+                tpath = validate_mpath(directory, mpath, exts)
+                if tpath == None:
+                    print(f"  {Fore.RED}Invalid mpath '{mpath}'. \n [compilation terminated]{Style.RESET_ALL}")
+                    sys.exit(0)
+                actual_paths.append(tpath)
+            if len(actual_paths) == 1:
+                continue
+
+            rebuild = not is_mpath_same(directory, key, [".c", ".h"] if compiler == "gcc" else [".c", ".cpp", ".c++", ".h", ".hpp", ".h++"])
+            if rebuild:
+                for index, ap in enumerate(actual_paths[1:]):
+                    if ap not in build_files:
+                        print(f" {Fore.GREEN}Rebuilding due to relation.{Style.RESET_ALL}")
+                        build_c(_recompile[index].split("/")[0][len("m_"):], Path(actual_paths[index + 1]), True)
+                    else:
+                        print(f" {Fore.YELLOW}SKIPPED (already compiled).{Style.RESET_ALL}")
+
+    h_files = get_files(Path(directory + f"/modules/{module}"), [".h"] if compiler == "gcc" else [".h", ".hpp", ".h++"])
+    for hf in h_files:
+        source_file = hf.resolve()
+        destination_folder = directory + f"/last/modules/{module}"
+
+        Path(destination_folder).mkdir(parents=True, exist_ok=True)
+        shutil.copy(source_file, destination_folder)
+
+    print("~~== Linking ==~~")
+    o_files = get_files(Path(directory + "/build"), ".o")
     o_files = [str(i) for i in o_files]
+
     print(f"{Fore.GREEN} Linking modules {Style.RESET_ALL}")
+
     command = f"  {compiler} -I{directory}/include -std={standard} -o {directory}/{output} {' '.join(o_files)}"
     print(command)
     result = os.system(command)
 
+    print(f"~~== {Fore.CYAN}Finished{Style.RESET_ALL} ==~~")
     if result == 0:
         print(f"{Fore.GREEN} Program build into {output} {Style.RESET_ALL}")
     else:
