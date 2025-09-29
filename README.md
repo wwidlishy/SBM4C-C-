@@ -18,13 +18,16 @@ Simple Build Manager for C and C++
 ## usage
 1. creating a new project  
    type `sbm new <project_path>` and finish the setup  
-   <img width="743" height="244" alt="image" src="https://github.com/user-attachments/assets/916e1c10-f7d4-46f6-983e-5d9bbf08108d" />  
+   <img width="752" height="232" alt="image" src="https://github.com/user-attachments/assets/d51034f6-2d4c-4c53-8830-57a6f0905bfb" />  
+
 2. building a project  
    type `sbm build <project_path>`  
-   <img width="956" height="264" alt="image" src="https://github.com/user-attachments/assets/cd43a50f-44bb-433d-9af2-c5584041b6b2" />  
+   <img width="989" height="375" alt="image" src="https://github.com/user-attachments/assets/84d32d35-cb74-4b60-adad-629f4b83ed31" />  
+
 3. cleaning a project  
    type `sbm clean <project_path>`  
-   <img width="368" height="82" alt="image" src="https://github.com/user-attachments/assets/153f034f-0480-4f0c-9209-de764ac690af" />  
+   <img width="373" height="109" alt="image" src="https://github.com/user-attachments/assets/547c2fa2-1b8d-456c-a3fb-1ca831d9e2d4" />  
+
 4. rebuilding a project  
    type `sbm rebuild <project_path>` (its just clean + build)  
 
