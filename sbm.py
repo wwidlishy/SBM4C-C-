@@ -163,6 +163,24 @@ def build_c(module, cf, force=False):
             except:
                 pass
 
+            try:
+                modules = config.get(f"m_{module}", "include").split(" ")
+                includes = ""
+                folder_path = directory + "/modules"
+                for i in modules:
+                    valid = False
+                    for _module in [entry for entry in os.listdir(folder_path) if os.path.isdir(os.path.join(folder_path, entry))]:
+                        module_path = directory + f"/modules/{_module}"
+                        if f"m_{_module}" == i:
+                            valid = True
+                            includes += f" -I{directory}/modules/{_module}"
+                    if not valid:
+                        print(f"{Fore.RED} Invalid module id 'm_{_module}'. {Style.RESET_ALL}")
+                        sys.exit(0)
+                command += includes
+            except:
+                pass
+
             print(command)
             exit_code = os.system(command)
 
