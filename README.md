@@ -9,12 +9,12 @@ Simple Build Manager for C and C++
 - implemented:
   - executable building
   - new, clean, build, rebuild options
+  - relations
 - not implemented yet:
   - building to object files
   - building to libraries (linux .lib and windows .dll)
-  - building to gnu assembly
-  - relations
-
+  - additional include paths per module
+  
 ## usage
 1. creating a new project  
    type `sbm new <project_path>` and finish the setup  
@@ -54,7 +54,20 @@ NOTE:
    [m_main]
    flags = -O2
    ```
-2. relations
+2. Adding custom include paths to a specific module (not implemented yet)
+   to your config add:
+   ```ini
+   [m_<module_name>]
+   ... previous module settings
+   include = m_<module_name> m_<module_name> ...
+   ```
+   example for module `main`:
+   ```ini
+   [m_main]
+   ... previous module settings
+   include = m_mylittlemath
+   ```
+3. relations
    What are relations?  
    Relations force the buildsystem to recompile a file when a file its related to is changed or recompiled.  
    template:  
