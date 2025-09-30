@@ -192,11 +192,11 @@ def build_c(module, cf, force=False):
                 print(f"{Fore.RED} FAILURE. \n [compilation terminated]{Style.RESET_ALL}")
                 sys.exit(0)
 
-            source_file = cf.resolve()
-            destination_folder = directory + f"/last/modules/{module}"
+            # source_file = cf.resolve()
+            # destination_folder = directory + f"/last/modules/{module}"
 
-            Path(destination_folder).mkdir(parents=True, exist_ok=True)
-            shutil.copy(source_file, destination_folder)
+            # Path(destination_folder).mkdir(parents=True, exist_ok=True)
+            # shutil.copy(source_file, destination_folder)
 
 def validate_mpath(directory, mpath, all_ext):
     mpath = mpath.split("/")
@@ -338,13 +338,16 @@ if option == "build" or option == "rebuild":
                     else:
                         print(f" {Fore.YELLOW}SKIPPED (already compiled).{Style.RESET_ALL}")
 
-    h_files = get_files(Path(directory + f"/modules/{module}"), [".h"] if compiler == "gcc" else [".h", ".hpp", ".h++"])
-    for hf in h_files:
-        source_file = hf.resolve()
-        destination_folder = directory + f"/last/modules/{module}"
+    for module in [entry for entry in os.listdir(folder_path)
+        if os.path.isdir(os.path.join(folder_path, entry))]:
+        h_files = get_files(Path(directory + f"/modules/{module}"), [".c", ".h"] if compiler == "gcc" else [".c", ".cpp", ".c++", ".h", ".hpp", ".h++"])
+        for hf in h_files:
+            source_file = hf.resolve()
+            destination_folder = directory + "/last/" + str(hf.parent.relative_to(directory))
 
-        Path(destination_folder).mkdir(parents=True, exist_ok=True)
-        shutil.copy(source_file, destination_folder)
+            Path(destination_folder).mkdir(parents=True, exist_ok=True)
+            print(source_file, destination_folder)
+            shutil.copy(source_file, destination_folder)
 
     print("~~== Linking ==~~")
     o_files = get_files(Path(directory + "/build"), ".o")
