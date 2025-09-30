@@ -354,7 +354,7 @@ if option == "build" or option == "rebuild":
 
     result = 0
     if type_ == "exe":
-        command = f"  {compiler} -I{directory}/include -std={standard} -o {directory}/{output} {' '.join(o_files)}"
+        command = f"  {compiler} -I{directory}/include -std={standard} -o {directory}/{output} {' '.join(o_files)} {flags}"
         print(command)
         result = os.system(command)
     elif type_ == "obj":
