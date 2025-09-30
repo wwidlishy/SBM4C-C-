@@ -229,12 +229,13 @@ def is_mpath_same(directory, mpath, all_ext):
             if os.path.exists(module_path + "/" + "/".join(mpath[1:])):
                 f1 = open(module_path + "/" + "/".join(mpath[1:])).read()
 
-    folder_path = directory + "/last/modules"
-    for module in [entry for entry in os.listdir(folder_path) if os.path.isdir(os.path.join(folder_path, entry))]:
-        module_path = directory + f"/last/modules/{module}"
-        if f"m_{module}" == mpath[0]:
-            if os.path.exists(module_path + "/" + "/".join(mpath[1:])):
-                f2 = open(module_path + "/" + "/".join(mpath[1:])).read()
+    if os.path.exists(directory + "/last/modules"):
+        folder_path = directory + "/last/modules"
+        for module in [entry for entry in os.listdir(folder_path) if os.path.isdir(os.path.join(folder_path, entry))]:
+            module_path = directory + f"/last/modules/{module}"
+            if f"m_{module}" == mpath[0]:
+                if os.path.exists(module_path + "/" + "/".join(mpath[1:])):
+                    f2 = open(module_path + "/" + "/".join(mpath[1:])).read()
 
     return f1 == f2
 
@@ -343,10 +344,12 @@ if option == "build" or option == "rebuild":
         h_files = get_files(Path(directory + f"/modules/{module}"), [".c", ".h"] if compiler == "gcc" else [".c", ".cpp", ".c++", ".h", ".hpp", ".h++"])
         for hf in h_files:
             source_file = hf.resolve()
-            destination_folder = directory + "/last/" + str(hf.parent.relative_to(directory))
+
+            destination_folder = f"{directory}/" + "last/" + str(hf.parent.relative_to(directory))
+            if destination_folder.startswith("./"):
+                destination_folder = destination_folder[2:]
 
             Path(destination_folder).mkdir(parents=True, exist_ok=True)
-            print(source_file, destination_folder)
             shutil.copy(source_file, destination_folder)
 
     print("~~== Linking ==~~")
