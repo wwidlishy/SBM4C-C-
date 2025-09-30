@@ -149,7 +149,11 @@ if option == "clean" or option == "rebuild":
 def build_c(module, cf, force=False):
             try:
                 f1 = open(cf.resolve()).read()
-                f2 = open(directory + f"/last/modules/{module}/{cf.stem + cf.suffix}").read()
+                destination_folder = directory + "/last/" + str(cf.relative_to(directory))
+                if destination_folder.startswith("./"):
+                    destination_folder = destination_folder[2:]
+
+                f2 = open(destination_folder).read()
                 if (f1 == f2 and os.path.exists(f"{directory}/build/modules/{module}/{cf.stem}.o") and not force):
                     print(f"{Fore.YELLOW} SKIPPED (No source modification). {Style.RESET_ALL}")
                     return 5
@@ -234,7 +238,7 @@ def is_mpath_same(directory, mpath, all_ext):
         for module in [entry for entry in os.listdir(folder_path) if os.path.isdir(os.path.join(folder_path, entry))]:
             module_path = directory + f"/last/modules/{module}"
             if f"m_{module}" == mpath[0]:
-                if os.path.exists(module_path + "/" + "/".join(mpath[1:])):
+                if os.path.exists(str(module_path + "/" + "/".join(mpath[1:])).replace("\\", "/")):
                     f2 = open(module_path + "/" + "/".join(mpath[1:])).read()
 
     return f1 == f2
