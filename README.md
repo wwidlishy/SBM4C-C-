@@ -12,6 +12,24 @@ Simple Build Manager for C and C++
   - building to object files
   - relations
   - adding modules into a modules include path
+
+## installation
+1. Windows
+   - Download `sbm.exe` from latest release
+   - Put `sbm.exe` into a directory in path
+2. Debian / Debian based systems
+   - Download `sbm.deb` from latest release
+   - `sudo dpkg -i sbm.deb`
+3. Other linux systems or if `sbm.deb` fails
+   - Download `sbm` from latest release
+   - Put `sbm` into a directory in path
+4. Building from source
+   - Clone the repository
+   - Make sure you have python installed preferably 3.12+
+   - Make sure python has `colorama` and `pyinstaller`
+   - Build the script with pyinstaller
+   - Put the binary in the path
+
 ## usage
 1. creating a new project  
    type `sbm new <project_path>` and finish the setup  
