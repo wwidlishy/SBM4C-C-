@@ -15,9 +15,11 @@ directory = ""
 def get_files(folder_path: Path, extenstions):
     return [f for f in folder_path.rglob("*") if f.is_file() and f.suffix in extenstions]
 
-if len(sys.argv) == 3:
+if len(sys.argv) >= 3:
     option = sys.argv[1]
     directory = sys.argv[2]
+    if len(sys.argv) > 3 and option in ["new", "build", "clean", "rebuild"]:
+        pass
 else:
     print(
 """Usage: sbm [new/build/clean/rebuild] project_directory
@@ -60,6 +62,52 @@ if option == "new":
     while standard not in standards:
         standard = input(f" What standard? [{'/'.join(standards)}] ")
 
+    vsfolder = ""
+    while vsfolder.lower() not in ["y", "n"]:
+        vsfolder = input(" Would you like to create a helper .vscode folder? [Y/n] ").lower()
+
+    vsfolder_parent = "" # "current directory" or "project folder"
+    if vsfolder == "y":
+        while vsfolder_parent.lower() not in ["current directory", "project folder"]:
+            vsfolder_parent = input("  Where to place .vscode? [current directory/project folder] ").lower()
+
+    if vsfolder_parent == "current directory":
+        os.makedirs(".vscode", 511, True)
+        try:
+            f = open(".vscode/settings.json", 'w')
+            f.write(
+"""{
+    "C_Cpp.files.exclude": {
+        "**/.vscode": true,
+        "**/.vs": true,
+        "**/last": true
+    }
+}"""
+            )
+            f.close()
+        except OSError:
+            print(f"{Fore.RED} Unable to create '.vscode' directory.\n [compilation terminated] {Style.RESET_ALL}")
+            sys.exit()
+        print(f"{Fore.GREEN} Created '.vscode' directory. {Style.RESET_ALL}")
+    if vsfolder_parent == "project folder":
+        os.makedirs(directory + "/.vscode", 777, True)
+        try:
+            f = open(directory + "/.vscode/settings.json", 'w')
+            f.write(
+"""{
+    "C_Cpp.files.exclude": {
+        "**/.vscode": true,
+        "**/.vs": true,
+        "**/last": true
+    }
+}"""
+            )
+            f.close()
+        except OSError:
+            print(f"{Fore.RED} Unable to create '.vscode' directory.\n [compilation terminated] {Style.RESET_ALL}")
+            sys.exit()
+        print(f"{Fore.GREEN} Created '.vscode' directory. {Style.RESET_ALL}")
+
     if sys.platform == "linux":
         extenstion = extenstion.replace("exe", "out")
         extenstion = extenstion.replace("obj", "o")
@@ -74,6 +122,7 @@ if option == "new":
 
     with f:
         config = configparser.ConfigParser()
+        config.optionxform = str
 
         config["compiler"] = {
             "compiler": "gcc" if c_cpp == "c" else "g++",
@@ -203,6 +252,8 @@ def build_c(module, cf, force=False):
             # shutil.copy(source_file, destination_folder)
 
 def validate_mpath(directory, mpath, all_ext):
+    if mpath == "__sbmconfig__":
+        return directory + "__sbmconfig__"
     mpath = mpath.split("/")
     if len(mpath) <= 1:
         return None
@@ -219,6 +270,14 @@ def validate_mpath(directory, mpath, all_ext):
     return None
 
 def is_mpath_same(directory, mpath, all_ext):
+    if mpath == "__sbmconfig__":
+        if os.path.exists(directory + "/last/__sbmconfig__"):
+            f1 = open(directory + "/__sbmconfig__").read()
+            f2 = open(directory + "/last/__sbmconfig__").read()
+            return f1 == f2
+        else:
+            return False
+        
     mpath = mpath.split("/")
     if len(mpath) <= 1:
         return None
@@ -355,6 +414,8 @@ if option == "build" or option == "rebuild":
 
             Path(destination_folder).mkdir(parents=True, exist_ok=True)
             shutil.copy(source_file, destination_folder)
+
+    shutil.copy(directory + "/__sbmconfig__", directory + "/last/__sbmconfig__")
 
     print("~~== Linking ==~~")
     o_files = get_files(Path(directory + "/build"), ".o")
